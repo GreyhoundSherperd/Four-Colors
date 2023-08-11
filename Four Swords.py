@@ -12,15 +12,15 @@ played.
 colorslst = ["Red", "Blue", "Green", "Yellow"]
 playcards = []
 botcards = []
-HP1 = 10
-HP2 = 10
+playerHP = 10
+botHP = 10
 damagedealt = 0
 
 for x in range(40):
     playcards.append(colorslst[x % 4])
     botcards.append(colorslst[x % 4])
 
-while HP1 > 0 and HP2 > 0:
+while playerHP > 0 and botHP > 0:
     print("Player 1: " + str(playcards))
     print("Make a move: ")
     move = input()
@@ -53,19 +53,26 @@ while HP1 > 0 and HP2 > 0:
                         for v in range(comboHit):
                             botcards.remove("Green")
                 else:
-                    botmove = ("Blue " * comboHit)
-                    
+                    botmove = ("Blue " * movelst.count("Blue"))
+                    botHP -= (comboHit - movelst.count("Blue"))
                     for v in range(comboHit):
                         botcards.remove("Blue")
         else:
             defend = botcards.count("Blue")
             cOunter = botcards.count("Yellow")
-            if defend >= cOunter:
+            if defend != 0 and cOunter != 0:
+                if defend >= cOunter:
+                    botmove = "Blue"
+                else:
+                    botmove = "Yellow"
+            elif defend == 0 and cOunter != 0:
+                botmove = "Yellow"
+            elif defend != 0 and cOunter == 0:
                 botmove = "Blue"
-                botcards.remove("Blue")
-            else:
-                botmove = "Yellow" 
-                botcards.remove("Yellow")
-                damagedealt = 1
     elif "Blue" in movelst:
-        pass
+        if len(movelst) == damagedealt:
+            pass
+        else:
+            playerHP -= (damagedealt - len(movelst))
+            #FIXME
+        botmove = "Blue"
