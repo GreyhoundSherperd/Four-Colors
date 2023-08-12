@@ -9,6 +9,9 @@ with green cards to multi-counter. Can only play if a red card was played last t
 played.
 '''
 
+from random import randint
+from math import floor
+
 colorslst = ["Red", "Blue", "Green", "Yellow"]
 playcards = []
 botcards = []
@@ -25,21 +28,27 @@ while playerHP > 0 and botHP > 0:
     print("Make a move: ")
     move = input()
 
+    # Defend logic
     movelst = move.split(" ")
     botmove = ""
     if "Red" in movelst:
         if "Green" in movelst:
             comboHit = movelst.count("Red")
             defend = botcards.count("Blue")
+
+            # Defendable?
             if defend >= comboHit:
                 botmove = ("Blue " * comboHit)
                 for v in range(comboHit):
                     botcards.remove("Blue")
+            
+            # Counterable?
             else:
                 cOunter = botcards.count("Yellow")
                 stackable = botcards.count("Green")
                 if cOunter >= comboHit:
-                    if stackable >= cOunter:
+                    # Stackable?
+                    if stackable >= cOunter or stackable == (cOunter - 1):
                         botmove = ""
                         for v in range(comboHit):
                             botmove  += "Yellow "
@@ -50,13 +59,24 @@ while playerHP > 0 and botHP > 0:
                         damagedealt = comboHit
                         for v in range(comboHit):
                             botcards.remove("Yellow")
-                        for v in range(comboHit):
+                        for v in range(comboHit - 1):
                             botcards.remove("Green")
+                # Back to defend
                 else:
-                    botmove = ("Blue " * movelst.count("Blue"))
-                    botHP -= (comboHit - movelst.count("Blue"))
-                    for v in range(comboHit):
-                        botcards.remove("Blue")
+                    if defend != 0 and cOunter != 0:
+                        if cOunter > defend:
+                            botmove = "Yellow" * cOunter
+                            for v in range(cOunter):
+                                botcards.remove("Yellow")
+                            botHP -= (comboHit - cOunter)
+                            damagedealt = cOunter
+                        else:
+                            botmove = "Blue" * defend
+                            for v in range(defend):
+                                botcards.remove("Blue")
+                            botHP -= (comboHit - defend)
+        
+        # Single attack logic
         else:
             defend = botcards.count("Blue")
             cOunter = botcards.count("Yellow")
@@ -65,14 +85,84 @@ while playerHP > 0 and botHP > 0:
                     botmove = "Blue"
                 else:
                     botmove = "Yellow"
+                    damagedealt = 1
             elif defend == 0 and cOunter != 0:
                 botmove = "Yellow"
+                damagedealt = 1
             elif defend != 0 and cOunter == 0:
                 botmove = "Blue"
+            else:
+                attack = botcards.count("Red")
+                if attack == 0:
+                    # GAME OVER
+                    pass
+                else:
+                    botmove = "Red"
+                    damagedealt = 1
+                    botHP -= 1
     elif "Blue" in movelst:
-        if len(movelst) == damagedealt:
+        # Dealing damage
+        if len(movelst) == 1 and damagedealt == 0:
             pass
-        else:
-            playerHP -= (damagedealt - len(movelst))
-            #FIXME
-        botmove = "Blue"
+        elif damagedealt != 0:
+            if len(movelst) == damagedealt:
+                pass
+            else:
+                playerHP -= (damagedealt - len(movelst))
+
+        # Attacking Logic
+        attack = botcards.count("Red")
+        chance = randint(1, 3)
+        if chance == 1:
+            lipchance = randint(2, 3)
+            if floor((attack / lipchance)) == 0:
+                if attack == 0:
+                    defend = movelst.count("Blue")
+                    if defend == 0:
+                        # GAME OVER
+                        pass
+                    else:
+                        botmove = "Blue"
+                else:
+                    botmove == "Red" * attack
+                    for v in range(attack):
+                        botcards.remove("Red")
+                    damagedealt = attack
+            else:
+                botmove = "Red" * floor((attack / lipchance))
+                for v in range(floor(attack / lipchance)):
+                    botcards.remove("Red")
+                damagedealt = floor(attack / lipchance)
+        elif chance == 2:
+            lipchance = randint(3, 4)
+            if floor((attack / lipchance)) == 0:
+                if attack == 0:
+                    defend = botcards.count("Blue")
+                    if defend == 0:
+                        # GAME OVER
+                        pass
+                    else:
+                        botmove = "Blue"
+                else:
+                    botmove == "Red" * attack
+                    for v in range(attack):
+                        botcards.remove("Red")
+                    damagedealt = attack
+            else:
+                botmove = "Red" * floor((attack / lipchance))
+                for v in range(floor(attack / lipchance)):
+                    botcards.remove("Red")
+                damagedealt = floor(attack / lipchance)
+        elif chance == 3:
+            if defend == 0:
+                if attack != 0:
+                    botmove = "Red" * attack
+                    for v in range(attack):
+                        botcards.remove("Red")
+                    damagedealt = attack
+                else:
+                    # GAME OVER
+                    pass
+            else:
+                botmove = "Blue"
+                botcards.remove("Blue")
