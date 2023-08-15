@@ -4,8 +4,8 @@ Each player gets 20 cards of 4 colors, each color has a different objective:
 for example "Red Green Red".
 - Blue: Block, 1 blue card defends 1 damage, can multi-block without green cards.
 - Green: Bridge, Green cards were played in a zigzag pattern with red or yellow cards to multi-combo or multi-counter.
-- Yellow: Counter, A yellow card is a hybrid of red and blue, a yellow card blocks 1 damage and deal 1 damage, play in a zigzag pattern
-with green cards to multi-counter. Can only play if a red card was played last turn, and can only play equal or less than the red cards 
+- Yellow: Counter, A yellow card is a hybrid of red and blue, a yellow card blocks 1 damage and deal 1 damage, can multi-counter without green cards.
+Can only play if a red card was played last turn, and can only play equal or less than the red cards 
 played.
 '''
 
@@ -106,9 +106,10 @@ while playerHP > 0 and botHP > 0:
             pass
         elif damagedealt != 0:
             if len(movelst) == damagedealt:
-                pass
+                damagedealt = 0
             else:
                 playerHP -= (damagedealt - len(movelst))
+                damagedealt = 0
 
         # Attacking Logic
         attack = botcards.count("Red")
@@ -154,6 +155,7 @@ while playerHP > 0 and botHP > 0:
                     botcards.remove("Red")
                 damagedealt = floor(attack / lipchance)
         elif chance == 3:
+            defend = botcards.count("Blue")
             if defend == 0:
                 if attack != 0:
                     botmove = "Red" * attack
@@ -166,3 +168,41 @@ while playerHP > 0 and botHP > 0:
             else:
                 botmove = "Blue"
                 botcards.remove("Blue")
+    elif "Yellow" in movelst:
+        if (len(movelst)+1)/2 == damagedealt:
+            damagedealt = 0
+        else:
+            playerHP -= damagedealt - (len(movelst)+1)/2
+            damagedealt = 0
+        if "Green" in movelst:
+            defend = botcards.count("Blue")
+            cOunter = botcards.count("Yellow")
+            if defend >= cOunter:
+                if defend >= (len(movelst)+1)/2:
+                    botmove = "Blue" * int(((len(movelst)+1)/2))
+                else:
+                    botmove = "Blue" * defend
+            else:
+                if cOunter >= (len(movelst)+1)/2:
+                    botmove = "Yellow" * int(((len(movelst)+1)/2))
+                    damagedealt = (len(movelst)+1)/2
+                else:
+                    botmove = "Yellow" * cOunter
+                    damagedealt = cOunter
+        else:
+            defend = botcards.count("Blue")
+            cOunter = botcards.count("Yellow")
+            if defend != 0 and cOunter != 0:
+                if defend >= cOunter:
+                    botmove = "Blue"
+                else:
+                    botmove = "Yellow"
+                    damagedealt = 1
+            elif defend != 0 and cOunter == 0:
+                botmove = "Blue"
+            elif defend == 0 and cOunter != 0:
+                botmove = "Yellow"
+                damagedealt = 1
+
+    print(botmove)
+    
